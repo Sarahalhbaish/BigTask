@@ -5,22 +5,28 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useCart } from "../component/CartContext";
+import { useQuery } from "@tanstack/react-query";
+import { getRestaurantById } from "../api/storage";
 
 export default function Menu({ route }) {
   const navigation = useNavigation();
-  const { item } = route.params;
+  const { id } = route.params;
   const { addToCart } = useCart();
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["restaurant", id],
+    queryFn: ({ queryKey }) => getRestaurantById(queryKey[1]),
+  });
+  console.log("data is", data);
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate("Cart")}>
           <Ionicons name="cart-outline" size={24} color="#6B3CE9" />
         </TouchableOpacity>
@@ -28,13 +34,13 @@ export default function Menu({ route }) {
 
       <ScrollView style={styles.content}>
         <View style={styles.restaurantInfo}>
-          <Image source={{ uri: item.image }} style={styles.restaurantImage} />
-          <Text style={styles.restaurantName}>{item.name}</Text>
+          <Image source={{ uri: data?.image }} style={styles.restaurantImage} />
+          <Text style={styles.restaurantName}>{data?.name}</Text>
         </View>
 
         <View style={styles.menuList}>
-          {item.menuItems.map((menuItem) => (
-            <View key={menuItem.id} style={styles.menuItem}>
+          {data?.items?.map((menuItem) => (
+            <View key={menuItem._id} style={styles.menuItem}>
               <Image
                 source={{ uri: menuItem.image }}
                 style={styles.menuItemImage}
@@ -42,7 +48,7 @@ export default function Menu({ route }) {
               <View style={styles.menuItemInfo}>
                 <Text style={styles.menuItemName}>{menuItem.name}</Text>
                 <Text style={styles.menuItemPrice}>
-                  ${menuItem.price.toFixed(2)}
+                  ${menuItem.price?.toFixed(2)}
                 </Text>
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
@@ -53,9 +59,11 @@ export default function Menu({ route }) {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.detailsButton}
-                    onPress={() => navigation.navigate("Desh", { menuItem })}
+                    onPress={() =>
+                      navigation.navigate("Desh", { id: menuItem._id })
+                    }
                   >
-                    <Text style={styles.detailsButtonText}>View Details</Text>
+                    <Text style={styles.detailsButtonText}>Details</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -108,15 +116,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     marginBottom: 16,
     borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
     padding: 12,
+    ...Platform.select({
+      ios: {
+        boxShadow: "0px 2px 3.84px rgba(0, 0, 0, 0.1)",
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
   },
   menuItemImage: {
     width: 100,

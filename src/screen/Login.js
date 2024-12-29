@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
@@ -74,14 +75,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    ...(Platform.OS === "ios" || Platform.OS === "web"
+      ? { boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)" }
+      : { elevation: 5 }),
   },
   logoContainer: {
     alignItems: "center",
@@ -95,8 +91,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
     color: "#333",
-    marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
@@ -130,5 +127,16 @@ const styles = StyleSheet.create({
   registerButtonText: {
     color: "#6B3CE9",
     fontSize: 14,
+  },
+  buttonContainer: {
+    marginTop: 10,
+  },
+  registerLink: {
+    marginTop: 15,
+    alignItems: "center",
+  },
+  registerText: {
+    color: "#6B3CE9",
+    fontSize: 16,
   },
 });

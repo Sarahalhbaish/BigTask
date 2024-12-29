@@ -7,24 +7,37 @@ import {
   TextInput,
   StyleSheet,
 } from "react-native";
-import category from "../data/category";
 import { useNavigation } from "@react-navigation/native";
-import restaurants from "../data/restaurants";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getCategories, getRestaurants } from "../api/storage";
 
 export default function Home() {
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredRestaurants, setFilteredRestaurants] = useState(restaurants);
+  const [filteredRestaurants, setFilteredRestaurants] = useState([]);
+
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+  });
+  console.log("categories", categories);
+
+  const { data: restaurants } = useQuery({
+    queryKey: ["restaurants"],
+    queryFn: getRestaurants,
+  });
+  console.log("restaurants", restaurants);
 
   const handleSearch = (text) => {
     setSearchQuery(text);
-    const filtered = restaurants.filter((restaurant) =>
+    const filtered = restaurants?.filter((restaurant) =>
       restaurant.name.toLowerCase().includes(text.toLowerCase())
     );
     setFilteredRestaurants(filtered);
   };
+  console.log("Filtered Restaurants:", filteredRestaurants);
 
   return (
     <ScrollView style={styles.container}>
@@ -55,32 +68,52 @@ export default function Home() {
         showsHorizontalScrollIndicator={false}
         style={styles.categoryContainer}
       >
-        {category.map((item) => (
-          <TouchableOpacity key={item.id} style={styles.categoryCard}>
-            <Image
-              source={{ uri: item.categoryImage }}
-              style={styles.categoryImage}
-            />
-            <Text style={styles.categoryName}>{item.categoryName}</Text>
+        {categories?.map((item) => (
+          <TouchableOpacity key={item._id} style={styles.categoryCard}>
+            <Image source={{ uri: item.image }} style={styles.categoryImage} />
+            <Text style={styles.categoryName}>{item.name}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
       <Text style={styles.sectionTitle}>Popular Restaurants</Text>
       <View style={styles.restaurantsContainer}>
-        {filteredRestaurants.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            style={styles.restaurantCard}
-            onPress={() => navigation.navigate("Menu", { item })}
-          >
-            <Image
-              source={{ uri: item.image }}
-              style={styles.restaurantImage}
-            />
-            <Text style={styles.restaurantName}>{item.name}</Text>
-          </TouchableOpacity>
-        ))}
+        {filteredRestaurants.length > 0
+          ? filteredRestaurants.map((item) => (
+              <TouchableOpacity
+                key={item._id}
+                style={styles.restaurantCard}
+                onPress={() => 
+                  
+                  navigation.navigate("Menu", { id: item.id })}
+              >
+                <Image
+                  source={{ uri: item.image }}
+                  style={styles.restaurantImage}
+                />
+                <Text style={styles.restaurantName}>{item.name}</Text>
+              </TouchableOpacity>
+            ))
+          : restaurants?.map((item) => (
+              <TouchableOpacity
+                key={item._id}
+                style={styles.restaurantCard}
+                onPress={() => {
+                  console.log("Full item:", item);
+                  console.log("item id is:", item._id);
+                  console.log("Navigating to Menu with params:", {
+                    id: item._id,
+                  });
+                  navigation.navigate("Menu", { id: item._id });
+                }}
+              >
+                <Image
+                  source={{ uri: item.image }}
+                  style={styles.restaurantImage}
+                />
+                <Text style={styles.restaurantName}>{item.name}</Text>
+              </TouchableOpacity>
+            ))}
       </View>
     </ScrollView>
   );
@@ -145,13 +178,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: "#fff",
     borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
+    boxShadow: "0px 2px 3.84px rgba(0, 0, 0, 0.1)",
     elevation: 5,
   },
   restaurantImage: {
@@ -164,5 +191,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     padding: 10,
     color: "#333",
+  },
+  noResultsText: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    marginTop: 20,
   },
 });

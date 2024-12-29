@@ -9,10 +9,16 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useCart } from "../component/CartContext";
+import { useQuery } from "@tanstack/react-query";
+import { getItem } from "../api/storage";
 
 export default function Desh({ route }) {
   const navigation = useNavigation();
-  const { menuItem } = route.params;
+  const { id } = route.params;
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["item", id],
+    queryFn: ({ queryKey }) => getItem(queryKey[1]),
+  });
   const { addToCart } = useCart();
 
   return (
@@ -27,19 +33,19 @@ export default function Desh({ route }) {
       </View>
 
       <ScrollView style={styles.content}>
-        <Image source={{ uri: menuItem.image }} style={styles.image} />
+        <Image source={{ uri: data?.image }} style={styles.image} />
 
         <View style={styles.detailsContainer}>
-          <Text style={styles.name}>{menuItem.name}</Text>
-          <Text style={styles.price}>${menuItem.price.toFixed(2)}</Text>
-          <Text style={styles.description}>{menuItem.description}</Text>
+          <Text style={styles.name}>{data?.name}</Text>
+          <Text style={styles.price}>${data?.price.toFixed(2)}</Text>
+          <Text style={styles.description}>{data?.description}</Text>
         </View>
       </ScrollView>
 
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => {
-          addToCart(menuItem);
+          addToCart(data);
           navigation.goBack();
         }}
       >
