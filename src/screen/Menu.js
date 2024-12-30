@@ -46,7 +46,10 @@ export default function Menu({ route }) {
                 style={styles.menuItemImage}
               />
               <View style={styles.menuItemInfo}>
-                <Text style={styles.menuItemName}>{menuItem.name}</Text>
+              <Text style={styles.menuItemName}>{menuItem.name}</Text>
+                <Text style={styles.menuItemDescription}>
+                  {menuItem.description}
+                </Text>
                 <Text style={styles.menuItemPrice}>
                   ${menuItem.price?.toFixed(2)}
                 </Text>

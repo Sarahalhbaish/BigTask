@@ -8,7 +8,8 @@ import {
   Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { users } from "../data/users";
+import { register } from "../api/storage";
+import { useMutation } from "@tanstack/react-query";
 
 export default function Register() {
   const navigation = useNavigation();
@@ -17,14 +18,17 @@ export default function Register() {
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
 
+  const mutation = useMutation({
+    mutationKey: ["register"],
+    mutationFn: (newUser) => register(newUser),
+  });
+
   const handleRegister = () => {
-    const newUser = {
-      id: users.length,
+    mutation.mutate({
       username: username,
       password: password,
-      details: [{ name: name, image: image }],
-    };
-    users.push(newUser);
+      image: image,
+    });
     navigation.navigate("Login");
   };
 
@@ -45,13 +49,6 @@ export default function Register() {
           onChangeText={setPassword}
           style={styles.input}
           secureTextEntry
-          placeholderTextColor="#666"
-        />
-        <TextInput
-          placeholder="Name"
-          value={name}
-          onChangeText={setName}
-          style={styles.input}
           placeholderTextColor="#666"
         />
         <TextInput

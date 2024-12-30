@@ -30,7 +30,7 @@ async function getItem(id) {
   return data;
 }
 
-async function login(newData) {
+async function apiLogin(newData) {
   const data = await instance.post(`/auth/login`, newData);
   console.log("data", data);
   return data;
@@ -42,10 +42,22 @@ async function register(newData) {
 }
 
 async function getProfile() {
-  const data = await instance.get(`/auth/profile`);
+  const token = await getAuthToken();
+  console.log("Im here !");
+  const data = await instance.get(`/auth/profile`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   console.log("data", data);
   return data;
 }
+
+async function getAuthToken() {
+  const token = await AsyncStorage.getItem("token");
+  return token;
+}
+
 
 export {
   getCategories,
@@ -53,7 +65,7 @@ export {
   getRestaurantById,
   addItem,
   getItem,
-  login,
+  apiLogin,
   register,
   getProfile,
 };

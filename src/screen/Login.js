@@ -9,23 +9,31 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
-import { users } from "../data/users";
+import { useMutation } from "@tanstack/react-query";
+import { useUser } from "../component/UserContext";
+import { apiLogin } from "../api/storage";
 
 export default function Login() {
   const navigation = useNavigation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const { login } = useUser();
+
+  const mutation = useMutation({
+    mutationKey: ["login"],
+    mutationFn: (newUser) => apiLogin(newUser),
+    onSuccess: (data) => {
+      console.log("here is user", data);
+      login(data);
+      navigation.navigate("Profile");
+    },
+  });
 
   const handleLogin = () => {
-    const user = users.find(
-      (user) => user.username === username && user.password === password
-    );
-
-    if (user) {
-      navigation.navigate("Profile", { user: user });
-    } else {
-      alert("Invalid username or password");
-    }
+    mutation.mutate({
+      username: username,
+      password: password,
+    });
   };
 
   return (

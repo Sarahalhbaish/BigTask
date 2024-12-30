@@ -8,11 +8,27 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useUser } from "../component/UserContext";
+import { useMutation } from "@tanstack/react-query";
+import { getProfile } from "../api/storage";
+import { useQuery } from "@tanstack/react-query";
 
-export default function Profile({ route }) {
+export default function Profile() {
   const navigation = useNavigation();
-  const { user } = route.params;
-  console.log(user);
+  const { user, logout } = useUser();
+
+  const mutation = useMutation({  
+    mutationKey: ["logout"],
+    mutationFn: () => logout(),
+    onSuccess: () => {
+      navigation.navigate("Login");
+    },
+  });
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => getProfile(),
+  });
 
   return (
     <View style={styles.container}>
@@ -28,8 +44,8 @@ export default function Profile({ route }) {
 
       <ScrollView style={styles.content}>
         <View style={styles.profileHeader}>
-          <Image source={user.image} style={styles.profileImage} />
-          <Text style={styles.name}>{user.name}</Text>
+          <Image source={data?.image} style={styles.profileImage} />
+          <Text style={styles.name}>{data?.name}</Text>
         </View>
 
         <View style={styles.infoSection}>
